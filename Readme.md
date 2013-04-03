@@ -56,6 +56,7 @@ All methods take a `data` object as their first parameter and a `callback(err, r
 
 * `easypost.address.verify` - Verify an address with the USPS
 * `easypost.postage.rates` - Get postage rates for a shipment
+* `easypost.postage.buy` - Buy postage for a shipment
 * `easypost.postage.get` - Get previous postage information
 
 Documentation is available at: <https://www.geteasypost.com/docs>
