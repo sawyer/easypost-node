@@ -1,5 +1,5 @@
 
-# easypostapi <sup>0.0.1</sup>
+# easypostjs <sup>0.0.1</sup>
 
 EasyPost API wrapper and command line utility for node.js.
 
