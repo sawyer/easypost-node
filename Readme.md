@@ -17,6 +17,16 @@ Example:
 
 ```bash
 easypost <your-api-key>
+
+Choose an option:
+  1) Verify a single address
+  2) Verify multiple addresses
+  3) Get multiple shipment rates
+  4) Get Shipment Rates
+  5) Buy Postage
+  6) Lookup individual label purchased
+  7) Get full list of labels purchased
+  :
 ```
 
 

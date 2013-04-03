@@ -21,7 +21,7 @@ program
 if (!program.args[0])
   return error()
 
-var easypost = require('../easypost')(program.args[0])
+var easypost = require('../')(program.args[0])
 
 var list = {
 

@@ -14,7 +14,7 @@ var vows         = require('vows')
 if (!apiKey)
   throw new Error('missing EASYPOST apiKey')
 
-var easypost = require('../index.js')(apiKey)
+var easypost = require('../')(apiKey)
 
 vows.describe('address').addBatch({
 
