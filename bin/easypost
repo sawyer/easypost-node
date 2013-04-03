@@ -1,0 +1,295 @@
+#!/usr/bin/env node
+
+//     easypostjs
+//     Copyright (c) 2013- Teelaunch, LLC. <support@teelaunch.com> (https://teelaunch.com)
+//     MIT Licensed
+
+// # bin - easypost
+
+var program  = require('commander')
+  , _        = require('underscore')
+  , fs       = require('fs')
+  , csv      = require('csv')
+  , async    = require('async')
+  , version  = require('../package').version
+  , opt      = {}
+
+program
+  .version(version)
+  .parse(process.argv)
+
+if (!program.args[0])
+  return error()
+
+var easypost = require('../easypost')(program.args[0])
+
+var list = {
+
+    'Verify a single address': {
+        route: easypost.address.verify
+      , fields: {
+            'address[street1]' : 'Street 1: '
+          , 'address[street2]' : 'Street 2: '
+          , 'address[city]'    : 'City: '
+          , 'address[state]'   : 'State '
+          , 'address[zip]'     : 'Zip: '
+        }
+      , defaults: {}
+    }
+
+  , 'Verify multiple addresses': {
+        route: verifyMultipleAddresses
+      , fields: {
+          'fileName' : 'Enter path to CSV file: '
+        }
+    }
+
+  , 'Get multiple shipment rates': {
+        route: getMultipleRates
+      , fields: {
+          'fileName' : 'Enter path to CSV file: '
+        }
+    }
+
+  , 'Get Shipment Rates': {
+        route: easypost.postage.rates
+      , fields: {
+            'to[zip]'        : "Recipient's zip: "
+          , 'from[zip]'      : "Sender's zip: "
+          , 'parcel[length]' : "Parcel's length (inches): "
+          , 'parcel[width]'  : "Parcel's width (inches): "
+          , 'parcel[height]' : "Parcel's height (inches): "
+          , 'parcel[weight]' : "Parcel's weight (ounces): "
+          // TODO: parcel[predefined_package]
+        }
+      , defaults: {
+            'from[zip]'      : '15601'
+          , 'parcel[length]' : '9'
+          , 'parcel[width]'  : '7'
+          , 'parcel[height]' : '1'
+        }
+    }
+
+  , 'Buy Postage': {
+        route: easypost.postage.buy
+      , fields: {
+            'to[name]'       : "Recipient's name: "
+          , 'to[street1]'    : "Recipient's street 1: "
+          , 'to[street2]'    : "Recipient's street 2: "
+          , 'to[city]'       : "Recipient's city: "
+          , 'to[state]'      : "Recipient's state: "
+          , 'to[zip]'        : "Recipient's zip: "
+          , 'from[name]'     : "Sender's name: "
+          , 'from[phone]'    : "Sender's phone: "
+          , 'from[street1]'  : "Sender's street 1: "
+          , 'from[street2]'  : "Sender's street 2: "
+          , 'from[city]'     : "Sender's city: "
+          , 'from[state]'    : "Sender's state: "
+          , 'from[zip]'      : "Sender's zip: "
+          , 'parcel[length]' : "Parcel's length (inches): "
+          , 'parcel[width]'  : "Parcel's width (inches): "
+          , 'parcel[height]' : "Parcel's height (inches): "
+          , 'parcel[weight]' : "Parcel's weight (ounces): "
+          // TODO: parcel[predefined_package]
+          , 'carrier'        : "Carrier: "
+          , 'service'        : "Service: "
+        }
+    }
+
+  , 'Lookup individual label purchased': {
+        route: easypost.postage.get
+      , fields: {
+          'label_file_name': "Label's file name (e.g. 'test.png'): "
+        }
+    }
+
+  , 'Get full list of labels purchased': {
+        route: easypost.postage.list
+      , fields: {}
+    }
+}
+
+choose()
+
+function choose() {
+  opt = {}
+  console.log('Choose an option:')
+  program.choose(_.keys(list), option)
+}
+
+function option(i) {
+  opt = _.values(list)[i]
+  opt.choice = _.keys(list)[i]
+  program.prompt(_.values(opt.fields), prepare)
+}
+
+function prepare(results) {
+  var keys   = _.keys(opt.fields)
+    , values = _.values(results)
+  var opts   = _.object(keys, values)
+  for (var i in opts) {
+    if (opts[i] === '' && opt.defaults[i])
+      opts[i] = opt.defaults[i]
+  }
+  opt.request = opts
+  opt.route(opts, callback)
+}
+
+function callback(err, res) {
+  if (err) return error(err)
+  if (res.message) console.log(res.message)
+  if (res.error) return error(res.error)
+  opt.response = res
+  console.log('Response:\n')
+  console.log(JSON.stringify(res, null, 2))
+  program.confirm('Save result?: ', confirm)
+}
+
+function confirm(ok) {
+  if (!ok) return program.confirm('Continue? ', again)
+  program.prompt('Enter new filename: ', writeFile)
+}
+
+function writeFile(fileName) {
+  opt.fileName = fileName
+  fs.writeFile(
+      fileName
+    , JSON.stringify({
+          choice: opt.choice
+        , request: opt.request
+        , response: opt.response
+      }, null, 2)
+    , saved
+  )
+}
+
+function saved(err) {
+  if (err) return error(err)
+  console.log('Successfuly saved: %s', opt.fileName)
+  program.confirm('Continue? ', again)
+}
+
+function again(ok) {
+  return (ok) ? choose() : process.exit()
+}
+
+function error(msg) {
+  msg = msg || '\007Missing API key, see `$ easypost --help`.'
+  console.log(msg)
+  process.exit(1)
+}
+
+// verifyMultipleAddresses
+function verifyMultipleAddresses(data, cb) {
+
+  var fileName = data.fileName
+
+  fs.exists(fileName, function(exists) {
+    if (!exists) return cb(new Error(fileName + ' does not exist'))
+    csv()
+      .from.path(fileName)
+      .on('record', onData)
+      .on('end', onEnd)
+      .on('error', onErr)
+  })
+
+  var addresses = []
+
+  function onData(csvData, i) {
+
+    if (csvData.length !== 5)
+      return cb(new Error('missing fields'))
+
+
+    var address = {
+        'address[street1]': csvData[0]
+      , 'address[street2]': csvData[1]
+      , 'address[city]': csvData[2]
+      , 'address[state]': csvData[3]
+      , 'address[zip]': csvData[4]
+    }
+
+    addresses.push(address)
+
+  }
+
+  function onEnd(count) {
+    console.log('addresses', addresses)
+    async.map(addresses, function(i, callback) {
+      easypost.address.verify(i, function(err, data) {
+        if (err) return callback(err)
+        var address = []
+        if (data.error) return callback(data.error)
+        if (data.address.street1)
+          address.push(data.address.street1)
+        else
+          address.push('')
+        if (data.address.street2)
+          address.push(data.address.street2)
+        else
+          address.push('')
+        address.push(data.address.city)
+        address.push(data.address.state)
+        address.push(data.address.zip)
+        console.log(address.join(','))
+        callback(null, data)
+      })
+    }, cb)
+  }
+
+  function onErr(err) {
+    return cb(err)
+  }
+
+}
+
+// getMultipleRates
+function getMultipleRates(data, cb) {
+
+  var fileName = data.fileName
+
+  fs.exists(fileName, function(exists) {
+    if (!exists) return cb(new Error(fileName + ' does not exist'))
+    csv()
+      .from.path(fileName)
+      .on('record', onData)
+      .on('end', onEnd)
+      .on('error', onErr)
+  })
+
+  var rates = []
+
+  function onData(csvData, i) {
+
+    if (csvData.length !== 6)
+      return cb(new Error('missing fields'))
+
+
+    var rate = {
+        'to[zip]': csvData[0]
+      , 'from[zip]': csvData[1]
+      , 'parcel[length]': csvData[2]
+      , 'parcel[width]': csvData[3]
+      , 'parcel[height]': csvData[4]
+      , 'parcel[weight]': csvData[5]
+    }
+
+    rates.push(rate)
+
+  }
+
+  function onEnd(count) {
+    console.log('rates', rates)
+    async.map(rates, function(i, callback) {
+      easypost.postage.rates(i, function(err, data) {
+        if (err) return callback(err)
+        callback(null, data.rates[0].rate)
+      })
+    }, cb)
+  }
+
+  function onErr(err) {
+    return cb(err)
+  }
+
+}

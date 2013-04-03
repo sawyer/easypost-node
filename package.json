@@ -1,0 +1,51 @@
+{
+  "name": "easypostjs",
+  "description": "EasyPost API wrapper and command line utility for node.js.",
+  "version": "0.0.1",
+  "author": "Nick Baugh <niftylettuce@gmail.com>",
+  "contributors": [
+    {
+      "name": "Nick Baugh",
+      "email": "niftylettuce@gmail.com"
+    }
+  ],
+  "keywords": [
+    "easypost",
+    "teelaunch",
+    "shirts",
+    "pricing",
+    "shipping",
+    "postage",
+    "usps",
+    "kickstarter",
+    "indiegogo",
+    "crowdtilt",
+    "fedex",
+    "ups"
+  ],
+  "homepage": "https://github.com/teelaunch/node-easypost",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/teelaunch/node-easypost.git"
+  },
+  "engines": {
+    "node": "0.8.x",
+    "npm": "1.1.x"
+  },
+  "main": "easypost",
+  "bin": {
+    "easypost": "./bin/easypost"
+  },
+  "dependencies": {
+    "commander": "~1.1.1",
+    "underscore": "~1.4.3",
+    "csv": "~0.2.6",
+    "async": "~0.1.22"
+  },
+  "devDependencies": {
+    "vows": "*"
+  },
+  "scripts": {
+    "test": "vows test/*"
+  }
+}
