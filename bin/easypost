@@ -51,7 +51,7 @@ var list = {
         }
     }
 
-  , 'Get Shipment Rates': {
+  , 'Get shipment rates': {
         route: easypost.postage.rates
       , fields: {
             'to[zip]'        : "Recipient's zip: "
@@ -70,7 +70,7 @@ var list = {
         }
     }
 
-  , 'Buy Postage': {
+  , 'Buy postage': {
         route: easypost.postage.buy
       , fields: {
             'to[name]'       : "Recipient's name: "
