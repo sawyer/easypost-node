@@ -23,10 +23,10 @@
     "fedex",
     "ups"
   ],
-  "homepage": "https://github.com/teelaunch/node-easypost",
+  "homepage": "https://github.com/easypost/easypost-node",
   "repository": {
     "type": "git",
-    "url": "https://github.com/teelaunch/node-easypost.git"
+    "url": "https://github.com/easypost/easypost-node.git"
   },
   "engines": {
     "node": "0.8.x",

@@ -3,8 +3,9 @@
 
 EasyPost API wrapper and command line utility for node.js.
 
-Learn more about Teelaunch at <https://teelaunch.com>.
+Built in collaboration with [Teelaunch](https://teelaunch.com).
 
+<img src="http://cdn.teelaun.ch/img/teelaunch-logo.png" />
 
 ## Command Line Usage
 

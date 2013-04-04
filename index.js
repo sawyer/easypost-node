@@ -71,9 +71,9 @@ module.exports = function(apiKey) {
     var requestData = querystring.stringify(data)
 
     var headers = {
-        'Accept'           : 'application/json'
-      , 'User-Agent'       : 'easypostjs'
-      , 'X-Node-EasyPost' : version
+        'Accept'          : 'application/json'
+      , 'User-Agent'      : 'easypostjs'
+      , 'X-EasyPost-Node' : version
     }
 
     var post = false
