@@ -1,5 +1,5 @@
 
-# easypostjs <sup>[![Version Badge](http://vb.teelaun.ch/teelaunch/node-easypost.svg)](https://npmjs.org/package/easypostjs)</sup>
+# easypostjs <sup>[![Version Badge](http://vb.teelaun.ch/easypost/easypost-node.svg)](https://npmjs.org/package/easypostjs)</sup>
 
 EasyPost API wrapper and command line utility for node.js.
 
